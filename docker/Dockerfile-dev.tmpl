@@ -1,0 +1,25 @@
+FROM phusion/baseimage:0.9.22
+MAINTAINER rhoai
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get install -y build-essential \
+    python-dev \
+    python-pip \
+    dnsutils \
+    libpq-dev \
+    libcurl4-openssl-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install healthchecker
+ARG HEALTHCHECKER_VERSION=''
+COPY $HEALTHCHECKER_VERSION /tmp
+RUN pip install --extra-index-url %%EXTRA_INDEX_URL%% "file:///tmp/${HEALTHCHECKER_VERSION}#egg=healthchecker"
+
+RUN rm -f /tmp/${HEALTHCHECKER_VERSION}
+
+RUN mkdir /etc/service/healthchecker
+COPY run.sh /etc/service/healthchecker/run
+
+CMD ["/sbin/my_init"]
